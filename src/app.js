@@ -92,8 +92,11 @@ app.get('/admin/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/admin/login'));
 });
 
-// Auth middleware for /admin resource/api routes
+// Auth middleware for /admin resource/api routes (excludes login, logout, and static assets)
 app.use('/admin', (req, res, next) => {
+  const publicPaths = ['/login', '/logout'];
+  if (publicPaths.includes(req.path)) return next();
+  if (req.path.startsWith('/frontend/assets/')) return next();
   if (req.session?.adminUser) return next();
   return res.redirect('/admin/login');
 });
