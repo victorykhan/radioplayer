@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  avatar    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  uploads Track[]
+
+  @@map("users")
+}
+
+model Track {
+  id           Int       @id @default(autoincrement())
+  title        String
+  artist       String?
+  album        String?
+  genre        String?
+  year         Int?
+  trackNumber  Int?      @map("track_number")
+  composer     String?
+  lyrics       String?   @db.Text
+  duration     Float?
+  filePath     String    @map("file_path")
+  fileName     String    @map("file_name")
+  fileHash     String    @unique @map("file_hash")
+  fileSize     Int       @map("file_size")
+  mimeType     String?   @map("mime_type")
+  bitrate      Int?
+  sampleRate   Int?      @map("sample_rate")
+  encoding     String?
+  type         String    @default("song")
+  status       String    @default("active")
+  isFallback   Boolean   @default(false) @map("is_fallback")
+  displayTitle String?   @map("display_title")
+  displayArtist String?  @map("display_artist")
+  playCount    Int       @default(0) @map("play_count")
+  lastPlayedAt DateTime? @map("last_played_at")
+  uploadedBy   Int?      @map("uploaded_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  categories   TrackToCategory[]
+  playlists    PlaylistTrack[]
+  playLogs     PlayLog[]
+  uploader     User?            @relation(fields: [uploadedBy], references: [id])
+  fallbackItem FallbackPoolItem?
+
+  @@map("tracks")
+}
+
+model TrackCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique
+  color     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tracks TrackToCategory[]
+
+  @@map("track_categories")
+}
+
+model TrackToCategory {
+  trackId    Int @map("track_id")
+  categoryId Int @map("category_id")
+
+  track    Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  category TrackCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([trackId, categoryId])
+  @@map("track_category_track")
+}
+
+model Playlist {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  type        String   @default("rotation")
+  interval    Int?
+  maxPerHour  Int?     @map("max_per_hour")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tracks PlaylistTrack[]
+
+  @@map("playlists")
+}
+
+model PlaylistTrack {
+  id         Int      @id @default(autoincrement())
+  playlistId Int      @map("playlist_id")
+  trackId    Int      @map("track_id")
+  position   Int      @default(0)
+  weight     Int      @default(1)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track    Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, trackId])
+  @@map("playlist_track")
+}
+
+model FallbackPoolItem {
+  id          Int      @id @default(autoincrement())
+  trackId     Int?     @unique @map("track_id")
+  contentType String   @default("track") @map("content_type")
+  priority    Int      @default(0)
+  cooldown    Int?     @default(300)
+  maxPlays    Int?     @map("max_plays")
+  playCount   Int      @default(0) @map("play_count")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  track Track? @relation(fields: [trackId], references: [id], onDelete: SetNull)
+
+  @@map("fallback_pool_items")
+}
+
+model PlayLog {
+  id          Int      @id @default(autoincrement())
+  trackId     Int?     @map("track_id")
+  trackTitle  String   @map("track_title")
+  trackArtist String?  @map("track_artist")
+  source      String   @default("auto")
+  listenerIp  String?  @map("listener_ip")
+  playedAt    DateTime @default(now()) @map("played_at")
+  duration    Float?
+
+  track Track? @relation(fields: [trackId], references: [id], onDelete: SetNull)
+
+  @@map("play_logs")
+}
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  logLevel    String   @default("info") @map("log_level")
+  event       String
+  description String   @db.Text
+  causerType  String?  @map("causer_type")
+  causerId    Int?     @map("causer_id")
+  source      String?
+  ipAddress   String?  @map("ip_address")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("activity_logs")
+}
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String?  @db.Text
+  type      String   @default("string")
+  group     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}

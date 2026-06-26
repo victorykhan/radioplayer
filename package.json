@@ -1,0 +1,34 @@
+{
+  "name": "radioplay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/app.js",
+    "start": "NODE_ENV=production node src/app.js",
+    "playout": "node src/playout/index.js",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "adminjs": "^7.8.17",
+    "@adminjs/express": "^6.1.1",
+    "@adminjs/prisma": "^5.0.4",
+    "@prisma/client": "^5.22",
+    "express": "^4.21",
+    "express-session": "^1.18",
+    "multer": "^1.4",
+    "music-metadata": "^11.13.0",
+    "fluent-ffmpeg": "^2.1",
+    "node-cron": "^3.0",
+    "uuid": "^10.0",
+    "bcrypt": "^5.1",
+    "winston": "^3.17",
+    "dotenv": "^16.4"
+  },
+  "devDependencies": {
+    "prisma": "^5.22"
+  }
+}
