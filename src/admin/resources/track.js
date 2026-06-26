@@ -1,6 +1,17 @@
 export const trackResource = {
   options: {
     navigation: { name: 'Music Library', icon: 'Music' },
+    actions: {
+      bulkUpload: {
+        actionType: 'resource',
+        component: false,
+        icon: 'Upload',
+        label: 'Bulk Upload',
+        handler: async (req, res, context) => {
+          return { redirectUrl: '/admin/upload' };
+        },
+      },
+    },
     properties: {
       filePath: { isVisible: { list: false, edit: true, show: true } },
       fileHash: { isVisible: { list: false, edit: true, show: true } },

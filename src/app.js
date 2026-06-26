@@ -6,6 +6,7 @@ import { createAdmin } from './admin/index.js';
 import { trackRouter } from './api/tracks.js';
 import { playoutRouter } from './api/playout.js';
 import logger from './lib/logger.js';
+import { getUploadHtml } from './admin/upload-page.js';
 import bcrypt from 'bcrypt';
 import fs from 'fs';
 
@@ -62,7 +63,7 @@ app.get('/admin/login', async (req, res) => {
 
 // Login POST
 app.post('/admin/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body || {};
   if (!email || !password) {
     const login = await admin.renderLogin({
       action: '/admin/login',
@@ -99,6 +100,10 @@ app.use('/admin', (req, res, next) => {
   if (req.path.startsWith('/frontend/assets/')) return next();
   if (req.session?.adminUser) return next();
   return res.redirect('/admin/login');
+});
+
+app.get('/admin/upload', (req, res) => {
+  res.send(getUploadHtml());
 });
 
 app.use('/admin', adminRouter);
